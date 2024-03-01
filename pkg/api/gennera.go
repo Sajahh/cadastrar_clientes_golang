@@ -13,7 +13,7 @@ func RetornarPessoaEspecificaGennera(listaIDPerson []string, tokenGennera string
 	var pessoasDados []models.PessoaDados
 
 	for _, idPerson := range listaIDPerson {
-		//fmt.Printf("Buscando pessoa com IDPerson: %s\n", idPerson)
+
 		url := fmt.Sprintf("https://api2.gennera.com.br/institutions/696/persons/%s", idPerson)
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
