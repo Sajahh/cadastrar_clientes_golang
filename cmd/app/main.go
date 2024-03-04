@@ -6,7 +6,6 @@ import (
 	"meu_projeto_omie_gennera/pkg/api"
 	"meu_projeto_omie_gennera/pkg/utils"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -16,6 +15,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
+		fmt.Println(err)
 		log.Fatalf("Erro ao carregar o arquivo .env")
 	}
 
@@ -37,28 +37,25 @@ func main() {
 	idPersons := strings.Split(idPersonsStr, ",")
 	var wg sync.WaitGroup
 
-	for _, id := range idPersons {
+	for _, idStr := range idPersons {
 		wg.Add(1)
-		go func(id string) {
+		go func(idStr string) {
 			defer wg.Done()
 
-			idStr := strconv.Itoa(id)
 			pessoasDados := api.RetornarPessoaEspecificaGennera([]string{idStr}, tokenGennera)
 			if err != nil {
-				log.Printf("Erro ao obter dados do Gennera para ID %d: %v", id, err)
+				log.Printf("Erro ao obter dados do Gennera para ID %s: %v", idStr, err)
 				return
 			}
 
-			// Aqui, assumimos que pessoasDados retorna uma slice, mas você ajustará conforme sua lógica
 			for _, pessoa := range pessoasDados {
-				// Aqui você precisa converter pessoa (tipo PessoaDados) para ClienteOmie, se necessário
 				clienteOmie := utils.ConverterPessoaParaClienteOmie(pessoa)
-				bodyResponse := api.CadastrarClienteOmie(clienteOmie, appKey, appSecret)
-				if bodyResponse == "" {
-					log.Printf("Erro ao cadastrar cliente na Omie para ID %d: %v", id, err)
+				bodyResponse, err := api.CadastrarClienteOmie(clienteOmie, appKey, appSecret)
+				if err != nil || bodyResponse == "" {
+					log.Printf("Erro ao cadastrar cliente na Omie para ID %s: %v", idStr, err)
 				}
 			}
-		}(id)
+		}(idStr)
 	}
 	wg.Wait()
 	fmt.Println("Processamento concluído para todos os IDs.")
