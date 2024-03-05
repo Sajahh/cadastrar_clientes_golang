@@ -12,8 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// FIXME - IdStr não está sendo impresso (provavelmente nao esta sendo acessado)
-// TODO - Gerar aleatoriamente o codigo de integracao (Validar com Junior)
+// REVIEW - Testar se ID esta sendo armazenado
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -35,7 +34,7 @@ func main() {
 	}
 	fmt.Println("Iniciando o aplicativo...")
 
-	idPersonsStr := os.Getenv("ID_PERSONS")
+	idPersonsStr := os.Getenv("ID_PERSON")
 	idPersons := strings.Split(idPersonsStr, ",")
 	var wg sync.WaitGroup
 
@@ -44,7 +43,6 @@ func main() {
 
 	for _, idStr := range idPersons {
 		wg.Add(1)
-		idStr := idStr
 		go func(idStr string) {
 			defer wg.Done()
 
@@ -59,6 +57,7 @@ func main() {
 
 			for _, pessoa := range pessoasDados {
 				clienteOmie := utils.ConverterPessoaParaClienteOmie(pessoa)
+				//REVIEW - Testar abreviacao de endereco
 				err := utils.PrepararClienteParaOmie(&clienteOmie)
 				if err != nil {
 					log.Printf("Erro ao preparar cliente para Omie para ID %s: %v", idStr, err)
@@ -68,7 +67,6 @@ func main() {
 					log.Printf("Erro ao cadastrar cliente na Omie para ID %s: %v", idStr, err)
 					mutex.Lock()
 					idsComErro = append(idsComErro, idStr)
-					fmt.Println(idsComErro)
 					mutex.Unlock()
 				} else {
 					log.Printf("Cliente cadastrado com sucesso na Omie para o ID %s", idStr)
@@ -82,5 +80,5 @@ func main() {
 		utils.SalvarIDsComErro(idsComErro)
 	}
 
-	fmt.Println("Processamento concluído para todos os IDs.")
+	fmt.Println("Programa finalizado.")
 }
