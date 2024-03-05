@@ -3,14 +3,13 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
 	"meu_projeto_omie_gennera/pkg/models"
 	"net/http"
 )
 
-func CadastrarClienteOmie(cliente models.ClienteOmie, appKey string, appSecret string) string {
-
+func CadastrarClienteOmie(cliente models.ClienteOmie, appKey string, appSecret string, idPerson string) (string, error) {
 	url := "https://app.omie.com.br/api/v1/geral/clientes/"
 	payload := models.ClientePayload{
 		Call:      "IncluirCliente",
@@ -21,20 +20,23 @@ func CadastrarClienteOmie(cliente models.ClienteOmie, appKey string, appSecret s
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		log.Fatalf("Erro ao serializar o payload: %v", err)
+		return "", fmt.Errorf("erro ao serializar o payload: %w", err)
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		log.Fatalf("Erro ao fazer a requisição: %v", err)
+		return "", fmt.Errorf("erro ao fazer a requisição: %w", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return string(body), fmt.Errorf("erro com ID %s - status da resposta: %d, corpo: %s", idPerson, resp.StatusCode, string(body))
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Erro ao ler a resposta: %v", err)
+		return "", fmt.Errorf("erro ao ler a resposta para ID %s: %w", idPerson, err)
 	}
 
-	bodyStr := string(body)
-	return bodyStr
+	return string(body), nil
 }

@@ -1,0 +1,6 @@
+GENNERA_TOKEN = token_gennera
+
+APP_KEY = app_key
+APP_SECRET = app_secret
+
+ID_PERSON = "lista_id_persons"
