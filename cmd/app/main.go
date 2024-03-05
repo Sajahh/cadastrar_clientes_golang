@@ -12,6 +12,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// FIXME - IdStr não está sendo impresso (provavelmente nao esta sendo acessado)
+// TODO - Gerar aleatoriamente o codigo de integracao (Validar com Junior)
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -37,26 +39,48 @@ func main() {
 	idPersons := strings.Split(idPersonsStr, ",")
 	var wg sync.WaitGroup
 
+	var idsComErro []string
+	var mutex sync.Mutex
+
 	for _, idStr := range idPersons {
 		wg.Add(1)
+		idStr := idStr
 		go func(idStr string) {
 			defer wg.Done()
 
-			pessoasDados := api.RetornarPessoaEspecificaGennera([]string{idStr}, tokenGennera)
+			pessoasDados, err := api.RetornarPessoaEspecificaGennera([]string{idStr}, tokenGennera)
 			if err != nil {
 				log.Printf("Erro ao obter dados do Gennera para ID %s: %v", idStr, err)
+				mutex.Lock()
+				idsComErro = append(idsComErro, idStr)
+				mutex.Unlock()
 				return
 			}
 
 			for _, pessoa := range pessoasDados {
 				clienteOmie := utils.ConverterPessoaParaClienteOmie(pessoa)
-				bodyResponse, err := api.CadastrarClienteOmie(clienteOmie, appKey, appSecret)
+				err := utils.PrepararClienteParaOmie(&clienteOmie)
+				if err != nil {
+					log.Printf("Erro ao preparar cliente para Omie para ID %s: %v", idStr, err)
+				}
+				bodyResponse, err := api.CadastrarClienteOmie(clienteOmie, appKey, appSecret, idStr)
 				if err != nil || bodyResponse == "" {
 					log.Printf("Erro ao cadastrar cliente na Omie para ID %s: %v", idStr, err)
+					mutex.Lock()
+					idsComErro = append(idsComErro, idStr)
+					fmt.Println(idsComErro)
+					mutex.Unlock()
+				} else {
+					log.Printf("Cliente cadastrado com sucesso na Omie para o ID %s", idStr)
 				}
 			}
 		}(idStr)
 	}
 	wg.Wait()
+
+	if len(idsComErro) > 0 {
+		utils.SalvarIDsComErro(idsComErro)
+	}
+
 	fmt.Println("Processamento concluído para todos os IDs.")
 }
