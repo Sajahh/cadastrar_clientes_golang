@@ -14,5 +14,8 @@ func EstadoParaSigla(nomeEstado string) (string, bool) {
 	}
 
 	sigla, ok := estadosParaSiglas[nomeEstado]
+	if !ok {
+		return "SP", true
+	}
 	return sigla, ok
 }

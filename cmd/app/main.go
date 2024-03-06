@@ -47,7 +47,7 @@ func main() {
 		}
 
 		for _, pessoa := range pessoasDados {
-			// Adicionando um delay entre cada requisição pode ajudar a evitar atingir limites de taxa
+
 			time.Sleep(1 * time.Second)
 			clienteOmie := utils.ConverterPessoaParaClienteOmie(pessoa)
 			err := utils.PrepararClienteParaOmie(&clienteOmie)
@@ -62,7 +62,7 @@ func main() {
 			} else {
 				log.Printf("Cliente cadastrado com sucesso na Omie para o ID %s", idStr)
 			}
-			// Adiciona outro delay após a requisição, se necessário.
+
 			time.Sleep(1 * time.Second)
 		}
 	}
