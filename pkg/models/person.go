@@ -6,6 +6,7 @@ type PessoaDados struct {
 	Email        string `json:"email"`
 	BirthCountry string `json:"birthCountry"`
 	Zipcode      string `json:"zipcode"`
+	Neighborhood string `json:"neighborhood"`
 	City         string `json:"city"`
 	State        string `json:"state"`
 	StreetNumber string `json:"streetNumber"`

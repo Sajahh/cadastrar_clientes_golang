@@ -15,7 +15,7 @@ func ConverterPessoaParaClienteOmie(pessoa models.PessoaDados) models.ClienteOmi
 		Endereco:                pessoa.Street,
 		EnderecoNumero:          pessoa.StreetNumber,
 		Complemento:             "",
-		Bairro:                  "",
+		Bairro:                  pessoa.Neighborhood,
 		Estado:                  pessoa.State,
 		Cidade:                  pessoa.City,
 		Cep:                     pessoa.Zipcode,
